@@ -14,50 +14,7 @@ class _LoginViewState extends State<LoginView> {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(Icons.login, size: 60),
-              SizedBox(height: 30),
-
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'E-mail',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 10),
-
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Senha',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-              Align(
-                alignment: AlignmentGeometry.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      'recuperar_senha',
-                    );
-                  },
-                  child: Text('Esqueceu a senha?'),
-                ),
-              ),
-              SizedBox(height: 10),
-
-              ElevatedButton(onPressed: () {}, child: Text('entrar')),
-              SizedBox(height: 40),
-
-              TextButton(
-                onPressed: () {},
-                child: Text('Ainda não tem uma conta? Cadastre-se.'),
-              ),
-            ],
-          ),
+          child: Column(children: []),
         ),
       ),
     );
