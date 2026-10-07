@@ -2,6 +2,7 @@ import 'package:device_preview_plus/device_preview_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:reparo_pro/view/inicio_view.dart';
 import 'package:reparo_pro/view/login_view.dart';
+import 'package:reparo_pro/view/saber_mais_view.dart';
 
 import 'view/cadastro_usuario_view.dart';
 import 'view/perfil_view.dart';
@@ -33,6 +34,7 @@ class MainApp extends StatelessWidget {
         'recuperar_senha': (context) => const RecuperarSenhaView(),
         'sobre': (context) => const SobreView(),
         'login':(context) => const LoginView(),
+        'saber':(context) => const SaberMaisView()
       },
 
       onUnknownRoute: (settings) {
