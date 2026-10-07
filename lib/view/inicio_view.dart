@@ -27,7 +27,7 @@ class _InicioViewState extends State<InicioView> {
 
               ElevatedButton(
                 onPressed: () {
-                Navigator.pushReplacementNamed(context, 'cadastro_usuario');
+                Navigator.pushNamed(context, 'cadastro_usuario');
               },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black, 
@@ -35,7 +35,7 @@ class _InicioViewState extends State<InicioView> {
                   minimumSize: Size(double.infinity, 50), 
                 ),
                 child: Text(
-                  'Começar agora',
+                  'Cadastrar-se',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
@@ -44,7 +44,7 @@ class _InicioViewState extends State<InicioView> {
 
               TextButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, 'login');
+                  Navigator.pushNamed(context, 'login');
               
                 },
                 child: Text('Já tenho uma conta'),
