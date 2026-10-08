@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CadastroUsuarioView extends StatefulWidget {
-  const CadastroUsuarioView({super.key});
+class CadastroEmpresaView extends StatefulWidget {
+  const CadastroEmpresaView({super.key});
 
   @override
-  State<CadastroUsuarioView> createState() => _CadastroUsuarioViewState();
+  State<CadastroEmpresaView> createState() => _CadastroEmpresaViewState();
 }
 
-class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
+class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
   final _senhaController = TextEditingController();
   final _confirmacaoController = TextEditingController();
   bool _ocultarSenha = true;
@@ -29,12 +29,12 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
           padding: EdgeInsets.all(20),
           child: Column(
             children: [
-              Icon(Icons.account_box, size: 60),
+              Icon(Icons.business_outlined, size: 60),
               SizedBox(height: 60),
 
               TextField(
                 decoration: InputDecoration(
-                  labelText: 'Nome',
+                  labelText: 'Nome da Empresa',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -43,7 +43,7 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
               TextField(
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'CPF',
+                  labelText: 'CNPJ',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -52,7 +52,7 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
               TextField(
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  labelText: 'E-mail',
+                  labelText: 'E-mail Corporativo',
                   border: OutlineInputBorder(),
                 ),
               ),

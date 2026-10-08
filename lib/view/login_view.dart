@@ -8,6 +8,15 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
+  final _senhaController = TextEditingController();
+  bool _ocultarSenha = true;
+
+  @override
+  void dispose() {
+    _senhaController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,12 +26,13 @@ class _LoginViewState extends State<LoginView> {
           padding: EdgeInsets.all(20),
           child: Column(
             children: [
-              Icon(Icons.login, size: 60),
+              Icon(Icons.account_box, size: 60),
               SizedBox(height: 30),
 
               Expanded(child: Container()),
 
               TextField(
+                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'E-mail',
                   border: OutlineInputBorder(),
@@ -31,10 +41,30 @@ class _LoginViewState extends State<LoginView> {
               SizedBox(height: 10),
 
               TextField(
-                obscureText: true,
+                controller: _senhaController,
+                obscureText: _ocultarSenha,
+                onChanged: (_) => setState(() {}), // reconstrói ao digitar
                 decoration: InputDecoration(
                   labelText: 'Senha',
                   border: OutlineInputBorder(),
+                  suffixIcon: _senhaController.text.isEmpty
+                      ? null
+                      : Padding(
+                          padding: EdgeInsets.only(right: 5),
+                          child: IconButton(
+                            icon: Icon(
+                              _ocultarSenha
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _ocultarSenha = !_ocultarSenha;
+                              });
+                            },
+                          ),
+                        ),
                 ),
               ),
 
@@ -42,10 +72,7 @@ class _LoginViewState extends State<LoginView> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      'recuperar_senha',
-                    );
+                    Navigator.pushNamed(context, 'recuperar_senha');
                   },
                   child: Text('Esqueceu a senha?'),
                 ),
