@@ -27,7 +27,7 @@ class _InicioViewState extends State<InicioView> {
 
               ElevatedButton(
                 onPressed: () {
-                Navigator.pushNamed(context, 'cadastro_usuario');
+                Navigator.pushNamed(context, 'tipo_usuario');
               },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black, 
