@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+class LoginController {
+  static final RegExp _emailRegex =
+      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
 
-class LoginController extends ChangeNotifier{
-
+  bool isValidEmail(String email) => _emailRegex.hasMatch(email.trim());
 }
