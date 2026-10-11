@@ -1,7 +1,7 @@
 import 'package:device_preview_plus/device_preview_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:reparo_pro/view/cadastro_empresa_view.dart';
-import 'package:reparo_pro/view/home_view.dart';
+import 'package:reparo_pro/view/home_prestador_view.dart';
 import 'package:reparo_pro/view/inicio_view.dart';
 import 'package:reparo_pro/view/login_view.dart';
 import 'package:reparo_pro/view/perguntas_empresa_view.dart';
@@ -43,10 +43,8 @@ class MainApp extends StatelessWidget {
         'tipo_usuario':(context) => const TipoUsuarioView(),
         'tipo_prestador':(context) => const TipoPrestadorView(),
         'cadastro_empresa':(context) => const CadastroEmpresaView(),
-        'home':(context) => const HomeView(),
-        'preferencias':(context) => const PreferenciasView(),
-        'perguntas_empresa':(context) => const PerguntasEmpresaView(),
-        'perguntas_prestador':(context) => const PerguntasPrestadorView()
+        'home_prestador':(context) => const HomePrestadorView(),
+       
       },
 
       onUnknownRoute: (settings) {
