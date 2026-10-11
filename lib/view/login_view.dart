@@ -79,14 +79,19 @@ class _LoginViewState extends State<LoginView> {
               ),
               SizedBox(height: 10),
 
-              ElevatedButton(onPressed: () {}, child: Text('entrar')),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, 'feed');
+                }, 
+                child: Text('entrar')
+              ),
               SizedBox(height: 40),
 
               TextButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, 'saber');
+                  Navigator.pushReplacementNamed(context, 'tipo_usuario');
                 },
-                child: Text('Ajuda'),
+                child: Text('Não tem uma conta? Cadastre-se'),
               ),
             ],
           ),

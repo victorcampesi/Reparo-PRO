@@ -33,17 +33,10 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
               SizedBox(height: 60),
 
               TextField(
+                textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
-                  labelText: 'Nome da Empresa',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 20),
-
-              TextField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'CNPJ',
+                  labelText: 'Nome Fantasia',
+                  prefixIcon: Icon(Icons.storefront_outlined),
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -53,6 +46,27 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'E-mail Corporativo',
+                  prefixIcon: Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              TextField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'CNPJ',
+                  prefixIcon: Icon(Icons.badge_outlined),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              TextField(
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: 'Telefone',
+                  prefixIcon: Icon(Icons.phone_outlined),
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -64,6 +78,7 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: 'Senha',
+                  prefixIcon: Icon(Icons.lock_outline),
                   border: OutlineInputBorder(),
                   suffixIcon: _senhaController.text.isEmpty
                       ? null
@@ -93,6 +108,7 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: 'Confirme a senha',
+                  prefixIcon: Icon(Icons.lock_reset_outlined),
                   border: OutlineInputBorder(),
                   suffixIcon: _confirmacaoController.text.isEmpty
                       ? null
@@ -118,7 +134,9 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
               SizedBox(height: 70),
 
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, 'perguntas_empresa');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   padding: EdgeInsets.symmetric(vertical: 20),
