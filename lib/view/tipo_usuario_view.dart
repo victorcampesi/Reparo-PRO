@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reparo_pro/controller/sessao_controller.dart';
 
 class TipoUsuarioView extends StatefulWidget {
   const TipoUsuarioView({super.key});
@@ -37,6 +38,7 @@ class _TipoUsuarioViewState extends State<TipoUsuarioView> {
 
               ElevatedButton.icon(
                 onPressed: () {
+                  SessaoController.instance.definirTipoConta(TipoConta.consumidor);
                   Navigator.pushNamed(context, 'cadastro_usuario');
                 },
                 style: ElevatedButton.styleFrom(
@@ -69,6 +71,26 @@ class _TipoUsuarioViewState extends State<TipoUsuarioView> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Center(
+            heightFactor: 1,
+            child: TextButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, 'saber');
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text('Ajuda'),
+            ),
           ),
         ),
       ),
