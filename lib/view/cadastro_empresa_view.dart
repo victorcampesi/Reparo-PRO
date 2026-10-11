@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../controller/cadastro_empresa_controller.dart';
 
 class CadastroEmpresaView extends StatefulWidget {
   const CadastroEmpresaView({super.key});
@@ -8,6 +10,10 @@ class CadastroEmpresaView extends StatefulWidget {
 }
 
 class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
+  final _formKey = GlobalKey<FormState>();
+  final _controller = CadastroEmpresaController();
+  final _cnpjController = TextEditingController();
+  final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmacaoController = TextEditingController();
   bool _ocultarSenha = true;
@@ -15,9 +21,19 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
 
   @override
   void dispose() {
+    _cnpjController.dispose();
+    _emailController.dispose();
     _senhaController.dispose();
     _confirmacaoController.dispose();
     super.dispose();
+  }
+
+  void _criarConta() {
+    if (_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dados válidos!')),
+      );
+    }
   }
 
   @override
@@ -26,112 +42,156 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
       appBar: AppBar(), // seta de voltar automática
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(Icons.business_outlined, size: 60),
-              SizedBox(height: 60),
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                const Icon(Icons.business_outlined, size: 60),
+                const SizedBox(height: 60),
 
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Nome da Empresa',
-                  border: OutlineInputBorder(),
+                TextFormField(
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome da Empresa',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              TextField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'CNPJ',
-                  border: OutlineInputBorder(),
+                TextFormField(
+                  controller: _cnpjController,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(14),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'CNPJ',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe o CNPJ';
+                    }
+                    if (!_controller.isValidCnpj(value)) {
+                      return 'CNPJ inválido';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-              SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              TextField(
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'E-mail Corporativo',
-                  border: OutlineInputBorder(),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: 'E-mail Corporativo',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe o e-mail';
+                    }
+                    if (!_controller.isValidEmail(value)) {
+                      return 'E-mail inválido';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-              SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              TextField(
-                controller: _senhaController,
-                obscureText: _ocultarSenha,
-                onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(
-                  labelText: 'Senha',
-                  border: OutlineInputBorder(),
-                  suffixIcon: _senhaController.text.isEmpty
-                      ? null
-                      : Padding(
-                          padding: EdgeInsets.only(right: 5),
-                          child: IconButton(
-                            icon: Icon(
-                              _ocultarSenha
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              size: 20,
+                TextFormField(
+                  controller: _senhaController,
+                  obscureText: _ocultarSenha,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) => setState(() {}),
+                  decoration: InputDecoration(
+                    labelText: 'Senha',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: _senhaController.text.isEmpty
+                        ? null
+                        : Padding(
+                            padding: const EdgeInsets.only(right: 5),
+                            child: IconButton(
+                              icon: Icon(
+                                _ocultarSenha
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                size: 20,
+                              ),
+                              onPressed: () => setState(
+                                () => _ocultarSenha = !_ocultarSenha,
+                              ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _ocultarSenha = !_ocultarSenha;
-                              });
-                            },
                           ),
-                        ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Informe a senha';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-              SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              TextField(
-                controller: _confirmacaoController,
-                obscureText: _ocultarConfirmacao,
-                onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(
-                  labelText: 'Confirme a senha',
-                  border: OutlineInputBorder(),
-                  suffixIcon: _confirmacaoController.text.isEmpty
-                      ? null
-                      : Padding(
-                          padding: EdgeInsets.only(right: 5),
-                          child: IconButton(
-                            icon: Icon(
-                              _ocultarConfirmacao
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              size: 20,
+                TextFormField(
+                  controller: _confirmacaoController,
+                  obscureText: _ocultarConfirmacao,
+                  textInputAction: TextInputAction.done,
+                  onChanged: (_) => setState(() {}),
+                  onFieldSubmitted: (_) => _criarConta(),
+                  decoration: InputDecoration(
+                    labelText: 'Confirme a senha',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: _confirmacaoController.text.isEmpty
+                        ? null
+                        : Padding(
+                            padding: const EdgeInsets.only(right: 5),
+                            child: IconButton(
+                              icon: Icon(
+                                _ocultarConfirmacao
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                size: 20,
+                              ),
+                              onPressed: () => setState(
+                                () => _ocultarConfirmacao = !_ocultarConfirmacao,
+                              ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _ocultarConfirmacao = !_ocultarConfirmacao;
-                              });
-                            },
                           ),
-                        ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Confirme a senha';
+                    }
+                    if (!_controller.senhasIguais(_senhaController.text, value)) {
+                      return 'As senhas não coincidem';
+                    }
+                    return null;
+                  },
                 ),
-              ),
 
-              SizedBox(height: 70),
+                const SizedBox(height: 70),
 
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  minimumSize: Size(double.infinity, 50),
+                ElevatedButton(
+                  onPressed: _criarConta,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: const Text(
+                    'Criar Conta',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
                 ),
-                child: Text(
-                  'Criar Conta',
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-              ),
 
-              SizedBox(height: 20),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
