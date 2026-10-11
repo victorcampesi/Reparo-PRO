@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reparo_pro/controller/sessao_controller.dart';
 
 class CadastroUsuarioView extends StatefulWidget {
   const CadastroUsuarioView({super.key});
@@ -33,17 +34,10 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
               SizedBox(height: 60),
 
               TextField(
+                textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
                   labelText: 'Nome',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 20),
-
-              TextField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'CPF',
+                  prefixIcon: Icon(Icons.person_outline),
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -53,6 +47,27 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'E-mail',
+                  prefixIcon: Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              TextField(
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: 'Telefone',
+                  prefixIcon: Icon(Icons.phone_outlined),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              TextField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'CPF',
+                  prefixIcon: Icon(Icons.badge_outlined),
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -64,6 +79,7 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: 'Senha',
+                  prefixIcon: Icon(Icons.lock_outline),
                   border: OutlineInputBorder(),
                   suffixIcon: _senhaController.text.isEmpty
                       ? null
@@ -93,6 +109,7 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: 'Confirme a senha',
+                  prefixIcon: Icon(Icons.lock_reset_outlined),
                   border: OutlineInputBorder(),
                   suffixIcon: _confirmacaoController.text.isEmpty
                       ? null
@@ -118,7 +135,18 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
               SizedBox(height: 70),
 
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  final tipo = SessaoController.instance.tipoConta;
+
+                  if (tipo == TipoConta.autonomo) {
+                    Navigator.pushReplacementNamed(
+                      context,
+                      'perguntas_prestador',
+                    );
+                  } else {
+                    Navigator.pushReplacementNamed(context, 'preferencias');
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   padding: EdgeInsets.symmetric(vertical: 20),

@@ -23,7 +23,7 @@ class _SaberMaisViewState extends State<SaberMaisView> {
 
               Center(
                 child: Text(
-                  'Conheça os tipos de conta',
+                  'Sobre o Reparo PRO',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
@@ -32,14 +32,70 @@ class _SaberMaisViewState extends State<SaberMaisView> {
 
               Center(
                 child: Text(
-                  'Entenda qual perfil combina mais com você.',
+                  'Conheça o projeto e a equipe por trás dele.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               ),
               SizedBox(height: 30),
 
-              _CardTipoConta(
+              // --- Informações obrigatórias (RF004) ---
+              _CardInfo(
+                icone: Icons.flag_outlined,
+                titulo: 'Objetivo',
+                descricao:
+                    'Facilitar a comunicação e a interação entre clientes e '
+                    'prestadores de serviços de reparo, sejam eles autônomos '
+                    'ou empresas, reunindo busca, orçamentos e acompanhamento '
+                    'dos serviços em um só lugar.',
+              ),
+              SizedBox(height: 16),
+
+              _CardInfo(
+                icone: Icons.groups_outlined,
+                titulo: 'Equipe de desenvolvimento',
+                descricao: 'Victor Gabriel Souza Campesi\nLucas Cunha Barbosa',
+                // Se for em dupla: 'Victor [SOBRENOME]\nNome do colega'
+              ),
+              SizedBox(height: 16),
+
+              // --- Informações opcionais ---
+              _CardInfo(
+                icone: Icons.school_outlined,
+                titulo: 'Disciplina',
+                descricao: 'Programação para Dispositivos Móveis',
+              ),
+              SizedBox(height: 16),
+
+              _CardInfo(
+                icone: Icons.account_balance_outlined,
+                titulo: 'Instituição',
+                descricao: 'FATEC Ribeirão Preto',
+              ),
+              SizedBox(height: 16),
+
+              _CardInfo(
+                icone: Icons.person_outline,
+                titulo: 'Professor',
+                descricao: 'Rodrigo de Oliveira Plotze',
+              ),
+              SizedBox(height: 16),
+
+              _CardInfo(
+                icone: Icons.tag,
+                titulo: 'Versão',
+                descricao: '1.0.0',
+              ),
+
+              // --- Seção extra: tipos de conta ---
+              SizedBox(height: 32),
+              Text(
+                'Tipos de conta',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 16),
+
+              _CardInfo(
                 icone: Icons.shopping_cart_outlined,
                 titulo: 'Consumidor',
                 descricao:
@@ -48,7 +104,7 @@ class _SaberMaisViewState extends State<SaberMaisView> {
               ),
               SizedBox(height: 16),
 
-              _CardTipoConta(
+              _CardInfo(
                 icone: Icons.person_outline,
                 titulo: 'Prestador Autônomo',
                 descricao:
@@ -57,7 +113,7 @@ class _SaberMaisViewState extends State<SaberMaisView> {
               ),
               SizedBox(height: 16),
 
-              _CardTipoConta(
+              _CardInfo(
                 icone: Icons.business_outlined,
                 titulo: 'Prestador Empresa',
                 descricao:
@@ -72,12 +128,12 @@ class _SaberMaisViewState extends State<SaberMaisView> {
   }
 }
 
-class _CardTipoConta extends StatelessWidget {
+class _CardInfo extends StatelessWidget {
   final IconData icone;
   final String titulo;
   final String descricao;
 
-  const _CardTipoConta({
+  const _CardInfo({
     required this.icone,
     required this.titulo,
     required this.descricao,
