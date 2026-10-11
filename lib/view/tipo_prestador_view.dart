@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reparo_pro/controller/sessao_controller.dart';
 
 class TipoPrestadorView extends StatefulWidget {
   const TipoPrestadorView({super.key});
@@ -37,6 +38,7 @@ class _TipoPrestadorViewState extends State<TipoPrestadorView> {
 
               ElevatedButton.icon(
                 onPressed: () {
+                  SessaoController.instance.definirTipoConta(TipoConta.autonomo);
                   Navigator.pushNamed(context, 'cadastro_usuario');
                 },
                 style: ElevatedButton.styleFrom(
@@ -55,6 +57,7 @@ class _TipoPrestadorViewState extends State<TipoPrestadorView> {
 
               ElevatedButton.icon(
                 onPressed: () {
+                  SessaoController.instance.definirTipoConta(TipoConta.empresa);
                   Navigator.pushNamed(context, 'cadastro_empresa');
                 },
                 style: ElevatedButton.styleFrom(
