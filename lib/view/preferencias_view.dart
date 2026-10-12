@@ -49,12 +49,12 @@ class _PreferenciasViewState extends State<PreferenciasView> {
 
   void _continuar() {
     PreferenciasController.instance.definir(_selecionadas);
-    Navigator.pushReplacementNamed(context, 'home');
+    Navigator.pushReplacementNamed(context, 'home_usuario');
   }
 
   void _pular() {
     PreferenciasController.instance.limpar();
-    Navigator.pushReplacementNamed(context, 'home');
+    Navigator.pushReplacementNamed(context, 'home_usuario');
   }
 
   @override

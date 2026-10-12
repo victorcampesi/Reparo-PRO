@@ -39,7 +39,7 @@ class _TipoPrestadorViewState extends State<TipoPrestadorView> {
               ElevatedButton.icon(
                 onPressed: () {
                   SessaoController.instance.definirTipoConta(TipoConta.autonomo);
-                  Navigator.pushNamed(context, 'cadastro_usuario');
+                  Navigator.pushNamed(context, 'cadastro_autonomo');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
