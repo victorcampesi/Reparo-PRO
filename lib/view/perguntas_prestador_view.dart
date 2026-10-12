@@ -115,7 +115,7 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
       );
       return;
     }
-    Navigator.pushReplacementNamed(context, 'home');
+    Navigator.pushReplacementNamed(context, 'home_prestador');
   }
 
   Widget _erro(String mensagem) {

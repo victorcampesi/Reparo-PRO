@@ -1,6 +1,31 @@
 class CadastroUsuarioController {
+  String nome = '';
+  String cpf = '';
+  String email = '';
+  String senha = '';
+
   static final RegExp _emailRegex =
       RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+
+  /// Guarda os valores 
+  void salvar({
+    required String nome,
+    required String cpf,
+    required String email,
+    required String senha,
+  }) {
+    this.nome = nome.trim();
+    this.cpf = cpf.replaceAll(RegExp(r'\D'), '');
+    this.email = email.trim();
+    this.senha = senha;
+  }
+
+  void limpar() {
+    nome = '';
+    cpf = '';
+    email = '';
+    senha = '';
+  }
 
   bool isValidEmail(String email) => _emailRegex.hasMatch(email.trim());
 
