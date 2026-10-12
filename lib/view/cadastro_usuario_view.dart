@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
 import '../controller/cadastro_usuario_controller.dart';
 
 class CadastroUsuarioView extends StatefulWidget {
@@ -12,15 +13,19 @@ class CadastroUsuarioView extends StatefulWidget {
 class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
   final _formKey = GlobalKey<FormState>();
   final _controller = CadastroUsuarioController();
+  final _nomeController = TextEditingController();
   final _cpfController = TextEditingController();
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmacaoController = TextEditingController();
   bool _ocultarSenha = true;
   bool _ocultarConfirmacao = true;
+  
+  final ctrl = GetIt.I.get<CadastroUsuarioController>();
 
   @override
   void dispose() {
+    _nomeController.dispose();
     _cpfController.dispose();
     _emailController.dispose();
     _senhaController.dispose();
@@ -29,11 +34,20 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
   }
 
   void _criarConta() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dados válidos!')),
-      );
-    }
+    if (!_formKey.currentState!.validate()) return;
+
+    _controller.salvar(
+      nome: _nomeController.text,
+      cpf: _cpfController.text,
+      email: _emailController.text,
+      senha: _senhaController.text,
+    );
+
+    Navigator.pushNamed(
+      context,
+      'preferencias',
+      arguments: _controller,
+    );
   }
 
   @override
@@ -51,6 +65,7 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
                 const SizedBox(height: 60),
 
                 TextFormField(
+                  controller: _nomeController,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     labelText: 'Nome',
