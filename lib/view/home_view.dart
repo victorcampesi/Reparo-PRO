@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reparo_pro/controller/preferencias_controller.dart';
+import 'perfil_usuario_view.dart';
 
 class Postagem {
   final String autor;
@@ -23,7 +24,6 @@ class Postagem {
   });
 }
 
-// Dados fictícios (mock), conforme permitido no RF007
 const List<Postagem> _postagens = [
   Postagem(
     autor: 'Carlos Eletricista',
@@ -208,10 +208,25 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('Reparo PRO', style: TextStyle(fontWeight: FontWeight.bold)),
+     appBar: AppBar(
+  automaticallyImplyLeading: false,
+  title: Text('Reparo PRO', style: TextStyle(fontWeight: FontWeight.bold)),
+  actions: [
+    IconButton(
+      icon: Icon(Icons.tune),
+      tooltip: 'Áreas de interesse',
+      onPressed: () => Navigator.pushNamed(context, 'preferencias'),
+    ),
+    IconButton(
+      icon: Icon(Icons.account_circle_outlined),
+      tooltip: 'Meu perfil',
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const PerfilUsuarioView()),
       ),
+    ),
+  ],
+),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.fromLTRB(20, 8, 20, 0),

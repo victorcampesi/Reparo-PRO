@@ -34,6 +34,12 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
         const SnackBar(content: Text('Dados válidos!')),
       );
     }
+    
+    Navigator.pushNamed(
+      context,
+      'perguntas_empresa',
+      arguments: _controller,
+    );
   }
 
   @override
