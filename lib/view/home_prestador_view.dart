@@ -106,10 +106,7 @@ class _HomePrestadorViewState extends State<HomePrestadorView> {
   }
 
   void _abrirPerfil() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const PerfilPrestadorView()),
-    );
+    Navigator.pushNamed(context, 'perfil_prestador');
   }
 
   Color _corFundoStatus(StatusServico status) {

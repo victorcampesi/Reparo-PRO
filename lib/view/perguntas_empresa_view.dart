@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:reparo_pro/controller/cadastro_empresa_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
 
 class PerguntasEmpresaView extends StatefulWidget {
   const PerguntasEmpresaView({super.key});
@@ -96,7 +98,22 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
       );
       return;
     }
-    Navigator.pushReplacementNamed(context, 'home');
+
+    // Guarda o perfil da empresa no controller compartilhado
+    getIt<CadastroEmpresaController>().salvarPerfil(
+      cidade: _cidadeController.text,
+      funcionarios: _faixaSelecionada ?? '',
+      tempoResposta: _tempoResposta ?? '',
+      link: _linkController.text,
+      descricao: _descricaoController.text,
+      raioKm: _raioKm,
+      atende24h: _atende24h,
+      orcamentoGratis: _orcamentoGratis,
+      areas: _areasSelecionadas,
+      publicos: _publicosSelecionados,
+    );
+
+    Navigator.pushReplacementNamed(context, 'home_empresa');
   }
 
   Widget _erro(String mensagem) {

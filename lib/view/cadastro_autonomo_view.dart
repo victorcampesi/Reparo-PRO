@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../controller/cadastro_usuario_controller.dart';
+import 'package:reparo_pro/controller/cadastro_usuario_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
 
 class CadastroAutonomoView extends StatefulWidget {
   const CadastroAutonomoView({super.key});
@@ -11,9 +12,14 @@ class CadastroAutonomoView extends StatefulWidget {
 
 class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
   final _formKey = GlobalKey<FormState>();
-  final _controller = CadastroUsuarioController();
+
+  // Mesma instância usada pelo cadastro de usuário e pelo perfil
+  final _controller = getIt<CadastroUsuarioController>();
+
+  final _nomeController = TextEditingController();
   final _cpfController = TextEditingController();
   final _emailController = TextEditingController();
+  final _telefoneController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmacaoController = TextEditingController();
   bool _ocultarSenha = true;
@@ -21,25 +27,33 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
 
   @override
   void dispose() {
+    _nomeController.dispose();
     _cpfController.dispose();
     _emailController.dispose();
+    _telefoneController.dispose();
     _senhaController.dispose();
     _confirmacaoController.dispose();
     super.dispose();
   }
 
   void _criarConta() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dados válidos!')),
-      );
-    }
+    if (!_formKey.currentState!.validate()) return;
+
+    _controller.salvar(
+      nome: _nomeController.text,
+      cpf: _cpfController.text,
+      email: _emailController.text,
+      telefone: _telefoneController.text,
+      senha: _senhaController.text,
+    );
+
+    Navigator.pushNamed(context, 'perguntas_prestador');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(), 
+      appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -51,6 +65,7 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
                 const SizedBox(height: 60),
 
                 TextFormField(
+                  controller: _nomeController,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     labelText: 'Nome',
@@ -104,6 +119,32 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
                 const SizedBox(height: 20),
 
                 TextFormField(
+                  controller: _telefoneController,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Telefone (com DDD)',
+                    hintText: '11912345678',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe o telefone';
+                    }
+                    if (!_controller.isValidTelefone(value)) {
+                      return 'Telefone inválido';
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                TextFormField(
                   controller: _senhaController,
                   obscureText: _ocultarSenha,
                   textInputAction: TextInputAction.next,
@@ -141,9 +182,7 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
                   controller: _confirmacaoController,
                   obscureText: _ocultarConfirmacao,
                   textInputAction: TextInputAction.done,
-                  onChanged: (_) => setState(() {
-
-                  }),
+                  onChanged: (_) => setState(() {}),
                   onFieldSubmitted: (_) => _criarConta(),
                   decoration: InputDecoration(
                     labelText: 'Confirme a senha',
@@ -172,7 +211,6 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
                     if (!_controller.senhasIguais(_senhaController.text, value)) {
                       return 'As senhas não coincidem';
                     }
-                    Navigator.pushNamed(context, 'perguntas_prestador');
                     return null;
                   },
                 ),
