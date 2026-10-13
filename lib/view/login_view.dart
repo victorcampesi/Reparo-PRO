@@ -25,7 +25,7 @@ class _LoginViewState extends State<LoginView> {
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('E-mail válido!')),
+        const SnackBar(content: Text('Dados não encontrados!')),
       );
     }
   }

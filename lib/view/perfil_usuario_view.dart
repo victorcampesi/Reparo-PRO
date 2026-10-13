@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:reparo_pro/controller/cadastro_usuario_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
 
 class ServicoContratado {
   final String titulo;
@@ -15,41 +17,31 @@ class ServicoContratado {
 }
 
 class PerfilUsuarioView extends StatelessWidget {
-  final String nome;
-  final String email;
-  final String telefone;
-  final String cpf;
-  final String cidade;
   final List<ServicoContratado> servicos;
 
   const PerfilUsuarioView({
     super.key,
-    this.nome = 'Maria Souza',
-    this.email = 'maria.souza@email.com',
-    this.telefone = '(11) 98765-4321',
-    this.cpf = '529.982.247-25',
-    this.cidade = 'São Paulo - SP',
-    this.servicos = const [
-      ServicoContratado(
-        titulo: 'Instalação de chuveiro',
-        prestador: 'Carlos Eletricista',
-        data: '10/10/2026',
-        status: 'Concluído',
-      ),
-      ServicoContratado(
-        titulo: 'Limpeza de ar-condicionado',
-        prestador: 'Climatiza Express',
-        data: '02/10/2026',
-        status: 'Concluído',
-      ),
-      ServicoContratado(
-        titulo: 'Pintura de sala',
-        prestador: 'Marina Pinturas',
-        data: '20/10/2026',
-        status: 'Agendado',
-      ),
-    ],
+    this.servicos = const [],
   });
+
+  // Dados do cadastro, lidos do controller compartilhado
+  CadastroUsuarioController get _cadastro =>
+      getIt<CadastroUsuarioController>();
+
+  String get nome => _cadastro.nome.isEmpty ? 'Usuário' : _cadastro.nome;
+
+  String get email =>
+      _cadastro.email.isEmpty ? 'Não informado' : _cadastro.email;
+
+  String get telefone => _cadastro.telefone.isEmpty
+      ? 'Não informado'
+      : _cadastro.telefoneFormatado;
+
+  String get cpf =>
+      _cadastro.cpf.isEmpty ? 'Não informado' : _cadastro.cpfFormatado;
+
+  String get cidade =>
+      _cadastro.cidade.isEmpty ? 'Não informado' : _cadastro.cidade;
 
   String get _iniciais {
     final partes =
@@ -147,6 +139,7 @@ class PerfilUsuarioView extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
+                Navigator.pushNamed(context, 'editar_perfil');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
@@ -207,7 +200,9 @@ class PerfilUsuarioView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
+   return ListenableBuilder(
+    listenable: _cadastro,
+    builder: (context, _) => DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
@@ -228,6 +223,7 @@ class PerfilUsuarioView extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

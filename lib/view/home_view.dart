@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reparo_pro/controller/preferencias_controller.dart';
 import 'perfil_usuario_view.dart';
+import 'buscar_servico_view.dart';
 
 class Postagem {
   final String autor;
@@ -205,29 +206,41 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   final _controller = PreferenciasController.instance;
 
+  void _abrirPerfil() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PerfilUsuarioView()),
+    );
+  }
+
+  void _buscarServico() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const BuscarServicoView()),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     appBar: AppBar(
-  automaticallyImplyLeading: false,
-  title: Text('Reparo PRO', style: TextStyle(fontWeight: FontWeight.bold)),
-  actions: [
-    IconButton(
-      icon: Icon(Icons.tune),
-      tooltip: 'Áreas de interesse',
-      onPressed: () => Navigator.pushNamed(context, 'preferencias'),
-    ),
-    IconButton(
-      icon: Icon(Icons.account_circle_outlined),
-      tooltip: 'Meu perfil',
-      onPressed: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const PerfilUsuarioView()),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text('Reparo PRO', style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.tune),
+            tooltip: 'Áreas de interesse',
+            onPressed: () => Navigator.pushNamed(context, 'preferencias'),
+          ),
+          IconButton(
+            icon: Icon(Icons.account_circle_outlined),
+            tooltip: 'Meu perfil',
+            onPressed: _abrirPerfil,
+          ),
+        ],
       ),
-    ),
-  ],
-),
       body: SafeArea(
+        
         child: Padding(
           padding: EdgeInsets.fromLTRB(20, 8, 20, 0),
           child: Column(
@@ -245,7 +258,24 @@ class _HomeViewState extends State<HomeView> {
                   ),
                 ),
               ),
+
               SizedBox(height: 12),
+
+               SizedBox(
+               width: double.infinity,
+               child: ElevatedButton.icon(
+                 onPressed: _buscarServico,
+                 icon: Icon(Icons.bolt, color: Colors.white),
+                 label: Text(
+                   'Buscar serviço agora',
+                   style: TextStyle(color: Colors.white, fontSize: 16),
+                 ),
+                 style: ElevatedButton.styleFrom(
+                   backgroundColor: Colors.black,
+                   padding: EdgeInsets.symmetric(vertical: 14),
+                 ),
+               ),
+             ),
 
               // Reconstrói automaticamente quando as preferências mudam
               Expanded(
@@ -383,7 +413,8 @@ class _PostCardState extends State<_PostCard> {
   bool _curtido = false;
 
   String get _iniciais {
-    final partes = widget.postagem.autor.split(' ');
+    final partes =
+        widget.postagem.autor.split(' ').where((p) => p.isNotEmpty);
     return partes.take(2).map((p) => p[0]).join().toUpperCase();
   }
 
