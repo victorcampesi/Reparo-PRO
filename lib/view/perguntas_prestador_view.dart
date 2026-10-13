@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:reparo_pro/controller/cadastro_usuario_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
 
 class PerguntasPrestadorView extends StatefulWidget {
   const PerguntasPrestadorView({super.key});
@@ -115,6 +117,17 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
       );
       return;
     }
+
+    // Guarda o perfil profissional no controller compartilhado
+    getIt<CadastroUsuarioController>().salvarPerfilProfissional(
+      cidade: _cidadeController.text,
+      formacao: _formacao ?? '',
+      experiencia: _experienciaSelecionada ?? '',
+      descricao: _descricaoController.text,
+      portfolio: _portfolioController.text,
+      areas: _areasSelecionadas,
+    );
+
     Navigator.pushReplacementNamed(context, 'home_prestador');
   }
 

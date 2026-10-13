@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:reparo_pro/controller/cadastro_usuario_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
 
 class Formacao {
   final String curso;
@@ -29,15 +31,6 @@ class Certificado {
 }
 
 class PerfilPrestadorView extends StatelessWidget {
-  
-//Dados de exemplo...
-
-  final String nome;
-  final String email;
-  final String telefone;
-  final String cpf;
-  final String profissao;
-  final String cidade;
   final double nota;
   final int totalAvaliacoes;
   final List<Formacao> formacoes;
@@ -45,52 +38,39 @@ class PerfilPrestadorView extends StatelessWidget {
 
   const PerfilPrestadorView({
     super.key,
-    this.nome = 'Geraldão da Manutenção',
-    this.email = 'Gdm@email.com',
-    this.telefone = '(11) 91234-5678',
-    this.cpf = '529.982.247-25',
-    this.profissao = 'Eletricista',
-    this.cidade = 'São Paulo - SP',
-    this.nota = 4.7,
-    this.totalAvaliacoes = 38,
-    this.formacoes = const [
-      Formacao(
-        curso: 'Técnico em Eletrotécnica',
-        instituicao: 'SENAI São Paulo',
-        periodo: '2015 - 2017',
-        nivel: 'Ensino técnico',
-      ),
-      Formacao(
-        curso: 'Ensino Médio Completo',
-        instituicao: 'E.E. Prof. João Mendes',
-        periodo: '2012 - 2014',
-        nivel: 'Ensino médio',
-      ),
-    ],
-    this.certificados = const [
-      Certificado(
-        nome: 'NR-10 - Segurança em Instalações Elétricas',
-        instituicao: 'SENAI São Paulo',
-        ano: '2022',
-        cargaHoraria: '40h',
-      ),
-      Certificado(
-        nome: 'NR-35 - Trabalho em Altura',
-        instituicao: 'Centro de Treinamento SP',
-        ano: '2021',
-        cargaHoraria: '8h',
-      ),
-      Certificado(
-        nome: 'Instalações Elétricas Residenciais',
-        instituicao: 'Fundação Oracle',
-        ano: '2019',
-        cargaHoraria: '60h',
-      ),
-    ],
+    this.nota = 0,
+    this.totalAvaliacoes = 0,
+    this.formacoes = const [],
+    this.certificados = const [],
   });
 
+  // Dados do cadastro, lidos do controller compartilhado
+  CadastroUsuarioController get _cadastro =>
+      getIt<CadastroUsuarioController>();
+
+  String get nome => _cadastro.nome.isEmpty ? 'Prestador' : _cadastro.nome;
+
+  String get email =>
+      _cadastro.email.isEmpty ? 'Não informado' : _cadastro.email;
+
+  String get cpf =>
+      _cadastro.cpf.isEmpty ? 'Não informado' : _cadastro.cpfFormatado;
+
+  String get telefone => _cadastro.telefone.isEmpty
+    ? 'Não informado'
+    : _cadastro.telefoneFormatado;
+
+  String get cidade =>
+      _cadastro.cidade.isEmpty ? 'Não informado' : _cadastro.cidade;
+
+  String get profissao => _cadastro.areas.isEmpty
+      ? 'Prestador de serviços'
+      : _cadastro.areas.join(', ');
+
   String get _iniciais {
-    final partes = nome.trim().split(RegExp(r'\s+'));
+    final partes =
+        nome.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (partes.isEmpty) return '?';
     if (partes.length == 1) return partes.first[0].toUpperCase();
     return (partes.first[0] + partes.last[0]).toUpperCase();
   }
@@ -113,6 +93,19 @@ class PerfilPrestadorView extends StatelessWidget {
   }
 
   Widget _blocoAvaliacao() {
+    if (totalAvaliacoes == 0) {
+      return Column(
+        children: [
+          _estrelas(0),
+          const SizedBox(height: 6),
+          const Text(
+            'Ainda sem avaliações',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ],
+      );
+    }
+
     return Column(
       children: [
         _estrelas(nota),
@@ -214,8 +207,6 @@ class PerfilPrestadorView extends StatelessWidget {
     );
   }
 
-  // Aba 2 
-
   Widget _abaDados(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -239,7 +230,15 @@ class PerfilPrestadorView extends StatelessWidget {
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
-          Text(profissao, style: const TextStyle(color: Colors.grey)),
+          Text(
+            profissao,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.grey),
+          ),
+          if (_cadastro.descricao.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(_cadastro.descricao, textAlign: TextAlign.center),
+          ],
           const SizedBox(height: 12),
           _blocoAvaliacao(),
           const SizedBox(height: 24),
@@ -263,6 +262,7 @@ class PerfilPrestadorView extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
+                Navigator.pushNamed(context, 'editar_perfil_prestador');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
@@ -279,13 +279,11 @@ class PerfilPrestadorView extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
+              onPressed: () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text('Sair'),
+              child: const Text('Voltar ao início'),
             ),
           ),
         ],
@@ -293,11 +291,27 @@ class PerfilPrestadorView extends StatelessWidget {
     );
   }
 
+  // Aba 2: formação e certificados
   Widget _abaFormacao() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
+          if (_cadastro.formacao.isNotEmpty)
+            Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                leading: const Icon(Icons.school_outlined, size: 32),
+                title: Text(
+                  _cadastro.formacao,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text('Experiência: ${_cadastro.experiencia}'),
+              ),
+            ),
+
           _titulo('Formação acadêmica'),
           if (formacoes.isEmpty)
             _vazio('Nenhuma formação cadastrada.')
@@ -317,8 +331,10 @@ class PerfilPrestadorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
+    return ListenableBuilder(
+      listenable: _cadastro,
+      builder: (context, _) => DefaultTabController(
+        length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Meu perfil'),
@@ -337,6 +353,7 @@ class PerfilPrestadorView extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

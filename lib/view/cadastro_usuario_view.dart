@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_it/get_it.dart';
-import '../controller/cadastro_usuario_controller.dart';
+import 'package:reparo_pro/controller/cadastro_usuario_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
 
 class CadastroUsuarioView extends StatefulWidget {
   const CadastroUsuarioView({super.key});
@@ -12,16 +12,18 @@ class CadastroUsuarioView extends StatefulWidget {
 
 class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
   final _formKey = GlobalKey<FormState>();
-  final _controller = CadastroUsuarioController();
+
+  // Única instância: a mesma que o perfil lê
+  final _controller = getIt<CadastroUsuarioController>();
+
   final _nomeController = TextEditingController();
   final _cpfController = TextEditingController();
   final _emailController = TextEditingController();
+  final _telefoneController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmacaoController = TextEditingController();
   bool _ocultarSenha = true;
   bool _ocultarConfirmacao = true;
-  
-  final ctrl = GetIt.I.get<CadastroUsuarioController>();
 
   @override
   void dispose() {
@@ -30,6 +32,7 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
     _emailController.dispose();
     _senhaController.dispose();
     _confirmacaoController.dispose();
+    _telefoneController.dispose();
     super.dispose();
   }
 
@@ -41,19 +44,16 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
       cpf: _cpfController.text,
       email: _emailController.text,
       senha: _senhaController.text,
+      telefone: _telefoneController.text,
     );
 
-    Navigator.pushNamed(
-      context,
-      'preferencias',
-      arguments: _controller,
-    );
+    Navigator.pushNamed(context, 'preferencias');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(), // seta de voltar automática
+      appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -116,6 +116,32 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  controller: _telefoneController,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Telefone (com DDD)',
+                    hintText: '11912345678',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe o telefone';
+                    }
+                    if (!_controller.isValidTelefone(value)) {
+                      return 'Telefone inválido';
+                    }
+                    return null;
+                  },
+                ),
+
                 const SizedBox(height: 20),
 
                 TextFormField(
