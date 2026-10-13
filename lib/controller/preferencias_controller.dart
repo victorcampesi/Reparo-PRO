@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 class PreferenciasController extends ChangeNotifier {
   PreferenciasController._();
 
-  // Instância única, usada por todas as telas
   static final PreferenciasController instance = PreferenciasController._();
 
   final Set<String> _areas = {};

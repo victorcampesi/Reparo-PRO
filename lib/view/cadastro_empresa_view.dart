@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../controller/cadastro_empresa_controller.dart';
+import 'package:reparo_pro/controller/cadastro_empresa_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
 
 class CadastroEmpresaView extends StatefulWidget {
   const CadastroEmpresaView({super.key});
@@ -11,41 +12,48 @@ class CadastroEmpresaView extends StatefulWidget {
 
 class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
   final _formKey = GlobalKey<FormState>();
-  final _controller = CadastroEmpresaController();
+
+  // Mesma instância que a home e o perfil leem
+  final _controller = getIt<CadastroEmpresaController>();
+
+  final _nomeController = TextEditingController();
   final _cnpjController = TextEditingController();
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmacaoController = TextEditingController();
+  final _telefoneController = TextEditingController();
   bool _ocultarSenha = true;
   bool _ocultarConfirmacao = true;
 
   @override
   void dispose() {
+    _nomeController.dispose();
     _cnpjController.dispose();
     _emailController.dispose();
     _senhaController.dispose();
     _confirmacaoController.dispose();
+    _telefoneController.dispose();
     super.dispose();
   }
 
   void _criarConta() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dados válidos!')),
-      );
-    }
-    
-    Navigator.pushNamed(
-      context,
-      'perguntas_empresa',
-      arguments: _controller,
+    if (!_formKey.currentState!.validate()) return;
+
+    _controller.salvar(
+      nome: _nomeController.text,
+      cnpj: _cnpjController.text,
+      email: _emailController.text,
+      senha: _senhaController.text,
+      telefone: _telefoneController.text,
     );
+
+    Navigator.pushNamed(context, 'perguntas_empresa');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(), // seta de voltar automática
+      appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -57,6 +65,7 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
                 const SizedBox(height: 60),
 
                 TextFormField(
+                  controller: _nomeController,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     labelText: 'Nome da Empresa',
@@ -107,6 +116,32 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  controller: _telefoneController,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Telefone (com DDD)',
+                    hintText: '11912345678',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe o telefone';
+                    }
+                    if (!_controller.isValidTelefone(value)) {
+                      return 'Telefone inválido';
+                    }
+                    return null;
+                  },
+                ),
+
                 const SizedBox(height: 20),
 
                 TextFormField(
