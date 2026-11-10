@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reparo_pro/controller/cadastro_empresa_controller.dart';
 import 'package:reparo_pro/service_locator.dart';
-import 'package:reparo_pro/view/perfil_empresa_view.dart';
 
 enum StatusSolicitacao { pendente, aceita, recusada }
 

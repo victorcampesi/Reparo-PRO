@@ -1,6 +1,8 @@
 import 'package:device_preview_plus/device_preview_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:reparo_pro/service_locator.dart';
+import 'firebase_options.dart';
 import 'package:reparo_pro/view/cadastro_autonomo_view.dart';
 import 'package:reparo_pro/view/cadastro_empresa_view.dart';
 import 'package:reparo_pro/view/editar_perfil_empresa_view.dart';
@@ -19,13 +21,14 @@ import 'package:reparo_pro/view/preferencias_view.dart';
 import 'package:reparo_pro/view/saber_mais_view.dart';
 import 'package:reparo_pro/view/tipo_prestador_view.dart';
 import 'package:reparo_pro/view/tipo_usuario_view.dart';
-
-
 import 'view/cadastro_usuario_view.dart';
 import 'view/recuperar_senha_view.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   setupLocator();
   runApp(DevicePreview(builder: (context) => const MainApp()));
 }

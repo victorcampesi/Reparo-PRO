@@ -1,0 +1,37 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "app-reparo-pro",
+          "appId": "1:1097775916256:android:d406832b0540fc995e5c85",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "app-reparo-pro",
+          "configurations": {
+            "android": "1:1097775916256:android:d406832b0540fc995e5c85",
+            "ios": "1:1097775916256:ios:7b784b6367fb26205e5c85",
+            "web": "1:1097775916256:web:da4da3d682a966645e5c85"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

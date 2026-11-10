@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'mapa_servico_view.dart';
-import 'perfil_prestador_view.dart'; 
 
 enum StatusServico { pendente, aceito, recusado }
 

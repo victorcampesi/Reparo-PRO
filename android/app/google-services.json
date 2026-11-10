@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1097775916256",
+    "project_id": "app-reparo-pro",
+    "storage_bucket": "app-reparo-pro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1097775916256:android:d406832b0540fc995e5c85",
+        "android_client_info": {
+          "package_name": "com.example.p1_pmoveis"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAVTMPxdhgdJsTkXpQHKx7Ak5MR1y-_BI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
