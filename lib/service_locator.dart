@@ -1,8 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:reparo_pro/controller/cadastro_usuario_controller.dart';
 import 'package:reparo_pro/controller/cadastro_empresa_controller.dart';
+import 'services/auth_service.dart';
 
 final getIt = GetIt.instance;
+
 
 void setupLocator() {
   getIt.registerLazySingleton<CadastroUsuarioController>(
@@ -11,4 +13,7 @@ void setupLocator() {
   getIt.registerLazySingleton<CadastroEmpresaController>(
     () => CadastroEmpresaController(),
   );
+
+  getIt.registerLazySingleton<AuthService>(() => AuthService());
+  
 }
