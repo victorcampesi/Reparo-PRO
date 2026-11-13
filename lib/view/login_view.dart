@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../controller/login_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
+import 'package:reparo_pro/services/auth_service.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -12,8 +13,11 @@ class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
-  final _loginController = LoginController();
+  final _auth = getIt<AuthService>();
+
   bool _ocultarSenha = true;
+  bool _carregando = false;
+  String? _erro;
 
   @override
   void dispose() {
@@ -22,12 +26,28 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dados não encontrados!')),
-      );
+  Future<void> _entrar() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
+
+    final erro = await _auth.login(
+      _emailController.text,
+      _senhaController.text,
+    );
+
+    if (!mounted) return;
+    setState(() => _carregando = false);
+
+    if (erro != null) {
+      setState(() => _erro = erro);
+      return;
     }
+
+    Navigator.pushNamedAndRemoveUntil(context, 'home_usuario', (_) => false);
   }
 
   @override
@@ -45,26 +65,26 @@ class _LoginViewState extends State<LoginView> {
                 const SizedBox(height: 30),
                 TextFormField(
                   controller: _emailController,
+                  enabled: !_carregando,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     labelText: 'E-mail',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Informe o e-mail';
-                    }
-                    if (!_loginController.isValidEmail(value)) {
-                      return 'E-mail inválido';
-                    }
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'Informe o e-mail';
+                    if (!v.contains('@')) return 'E-mail inválido';
                     return null;
                   },
                 ),
                 const SizedBox(height: 10),
-                TextField(
+                TextFormField(
                   controller: _senhaController,
+                  enabled: !_carregando,
                   obscureText: _ocultarSenha,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _entrar(),
                   decoration: InputDecoration(
                     labelText: 'Senha',
                     border: const OutlineInputBorder(),
@@ -77,12 +97,28 @@ class _LoginViewState extends State<LoginView> {
                           setState(() => _ocultarSenha = !_ocultarSenha),
                     ),
                   ),
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Informe a senha' : null,
                 ),
+                if (_erro != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _erro!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  ),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () =>
-                        Navigator.pushNamed(context, 'recuperar_senha'),
+                    onPressed: _carregando
+                        ? null
+                        : () => Navigator.pushNamed(context, 'recuperar_senha'),
                     child: const Text('Esqueceu a senha?'),
                   ),
                 ),
@@ -90,11 +126,24 @@ class _LoginViewState extends State<LoginView> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _handleLogin,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Text('Entrar'),
+                    onPressed: _carregando ? null : _entrar,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
+                    child: _carregando
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Entrar',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
                   ),
                 ),
               ],
