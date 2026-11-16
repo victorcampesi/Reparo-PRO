@@ -13,7 +13,6 @@ class CadastroAutonomoView extends StatefulWidget {
 class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
   final _formKey = GlobalKey<FormState>();
 
-  // Mesma instância usada pelo cadastro de usuário e pelo perfil
   final _controller = getIt<CadastroUsuarioController>();
 
   final _nomeController = TextEditingController();
@@ -64,13 +63,24 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
                 const Icon(Icons.account_box, size: 60),
                 const SizedBox(height: 60),
 
+                // ALTERADO: validator no nome
                 TextFormField(
                   controller: _nomeController,
                   textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
                     labelText: 'Nome',
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe o nome';
+                    }
+                    if (value.trim().length < 3) {
+                      return 'Nome muito curto';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
 
@@ -144,6 +154,7 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
 
                 const SizedBox(height: 20),
 
+                // ALTERADO: senha segura
                 TextFormField(
                   controller: _senhaController,
                   obscureText: _ocultarSenha,
@@ -151,6 +162,7 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     labelText: 'Senha',
+                    helperText: 'Mínimo 6 caracteres, com letras e números',
                     border: const OutlineInputBorder(),
                     suffixIcon: _senhaController.text.isEmpty
                         ? null
@@ -172,6 +184,13 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe a senha';
+                    }
+                    if (value.length < 6) {
+                      return 'Use pelo menos 6 caracteres';
+                    }
+                    if (!RegExp(r'[A-Za-z]').hasMatch(value) ||
+                        !RegExp(r'\d').hasMatch(value)) {
+                      return 'A senha deve ter letras e números';
                     }
                     return null;
                   },
@@ -225,7 +244,7 @@ class _CadastroAutonomoViewState extends State<CadastroAutonomoView> {
                     minimumSize: const Size(double.infinity, 50),
                   ),
                   child: const Text(
-                    'Criar Conta',
+                    'Continuar',
                     style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ),

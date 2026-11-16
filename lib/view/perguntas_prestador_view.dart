@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reparo_pro/controller/cadastro_usuario_controller.dart';
+import 'package:reparo_pro/controller/sessao_controller.dart';
 import 'package:reparo_pro/service_locator.dart';
 
 class PerguntasPrestadorView extends StatefulWidget {
@@ -84,6 +85,7 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
   bool _atendeEmergencia = false;
   bool _orcamentoGratis = true;
   bool _tentouEnviar = false;
+  bool _carregando = false; // NOVO
 
   @override
   void dispose() {
@@ -103,7 +105,9 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
     });
   }
 
-  void _finalizar() {
+  // ALTERADO: agora cria a conta no Firebase
+  Future<void> _finalizar() async {
+    if (_carregando) return;
     setState(() => _tentouEnviar = true);
 
     final camposValidos = _formKey.currentState!.validate();
@@ -113,13 +117,13 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
 
     if (!camposValidos || !selecoesValidas) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Preencha todos os campos obrigatórios.')),
+        const SnackBar(content: Text('Preencha todos os campos obrigatórios.')),
       );
       return;
     }
 
-    // Guarda o perfil profissional no controller compartilhado
-    getIt<CadastroUsuarioController>().salvarPerfilProfissional(
+    final controller = getIt<CadastroUsuarioController>();
+    controller.salvarPerfilProfissional(
       cidade: _cidadeController.text,
       formacao: _formacao ?? '',
       experiencia: _experienciaSelecionada ?? '',
@@ -128,12 +132,42 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
       areas: _areasSelecionadas,
     );
 
-    Navigator.pushReplacementNamed(context, 'home_prestador');
+    setState(() => _carregando = true);
+
+    final erro = await controller.criarConta(
+      tipo: TipoConta.autonomo,
+      extras: {
+        'diasAtendimento': _diasSelecionados.toList(),
+        'raioKm': _raioKm.round(),
+        'tempoResposta': _tempoResposta ?? '',
+        'garantia': _garantia ?? '',
+        'ferramentasProprias': _ferramentasProprias,
+        'atendeEmergencia': _atendeEmergencia,
+        'orcamentoGratis': _orcamentoGratis,
+      },
+    );
+
+    if (!mounted) return;
+    setState(() => _carregando = false);
+
+    if (erro != null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(erro)));
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('Conta criada com sucesso!')),
+      );
+    Navigator.pushNamedAndRemoveUntil(context, 'home_prestador', (_) => false);
   }
 
   Widget _erro(String mensagem) {
     return Padding(
-      padding: EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.only(top: 6),
       child: Text(
         mensagem,
         style: TextStyle(color: Colors.red.shade700, fontSize: 12),
@@ -144,7 +178,7 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
   Widget _titulo(String texto) {
     return Text(
       texto,
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
     );
   }
 
@@ -154,37 +188,38 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
       appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(child: Icon(Icons.engineering_outlined, size: 60)),
-                SizedBox(height: 20),
+                const Center(child: Icon(Icons.engineering_outlined, size: 60)),
+                const SizedBox(height: 20),
 
-                Center(
+                const Center(
                   child: Text(
                     'Conte-nos sobre você',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-                Center(
+                const Center(
                   child: Text(
                     'Essas informações ajudam os clientes a conhecer seu trabalho.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
 
                 TextFormField(
                   controller: _cidadeController,
+                  enabled: !_carregando,
                   textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Cidade-base',
                     prefixIcon: Icon(Icons.location_city_outlined),
                     border: OutlineInputBorder(),
@@ -196,11 +231,10 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-                // --- Experiência ---
                 _titulo('Há quanto tempo você trabalha na área?'),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -224,13 +258,12 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                 ),
                 if (_tentouEnviar && _experienciaSelecionada == null)
                   _erro('Selecione seu tempo de experiência'),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-                // --- Formação ---
                 DropdownButtonFormField<String>(
                   initialValue: _formacao,
                   isExpanded: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Formação',
                     prefixIcon: Icon(Icons.school_outlined),
                     border: OutlineInputBorder(),
@@ -242,11 +275,11 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                   validator: (valor) =>
                       valor == null ? 'Selecione sua formação' : null,
                 ),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-                // --- Áreas de atuação ---
+
                 _titulo('Em quais áreas você atua?'),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -268,11 +301,10 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                 ),
                 if (_tentouEnviar && _areasSelecionadas.isEmpty)
                   _erro('Selecione pelo menos uma área'),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-                // --- Dias de atendimento ---
                 _titulo('Em quais dias você atende?'),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -294,7 +326,7 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                 ),
                 if (_tentouEnviar && _diasSelecionados.isEmpty)
                   _erro('Selecione pelo menos um dia'),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
 
                 // --- Raio de atendimento ---
                 _titulo('Raio de atendimento: ${_raioKm.round()} km'),
@@ -307,13 +339,13 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                   label: '${_raioKm.round()} km',
                   onChanged: (valor) => setState(() => _raioKm = valor),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
 
                 // --- Tempo de resposta ---
                 DropdownButtonFormField<String>(
                   initialValue: _tempoResposta,
                   isExpanded: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Tempo médio de resposta',
                     prefixIcon: Icon(Icons.timer_outlined),
                     border: OutlineInputBorder(),
@@ -325,13 +357,13 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                   validator: (valor) =>
                       valor == null ? 'Selecione o tempo de resposta' : null,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // --- Garantia ---
                 DropdownButtonFormField<String>(
                   initialValue: _garantia,
                   isExpanded: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Garantia oferecida nos serviços',
                     prefixIcon: Icon(Icons.verified_user_outlined),
                     border: OutlineInputBorder(),
@@ -343,13 +375,14 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                   validator: (valor) =>
                       valor == null ? 'Selecione a garantia oferecida' : null,
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
 
                 // --- Switches ---
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Possuo ferramentas próprias'),
-                  subtitle: Text('Levo o que preciso para executar o serviço'),
+                  title: const Text('Possuo ferramentas próprias'),
+                  subtitle:
+                      const Text('Levo o que preciso para executar o serviço'),
                   value: _ferramentasProprias,
                   activeThumbColor: Colors.black,
                   onChanged: (valor) =>
@@ -357,8 +390,8 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Atendo emergências'),
-                  subtitle: Text('Noites, fins de semana e feriados'),
+                  title: const Text('Atendo emergências'),
+                  subtitle: const Text('Noites, fins de semana e feriados'),
                   value: _atendeEmergencia,
                   activeThumbColor: Colors.black,
                   onChanged: (valor) =>
@@ -366,30 +399,34 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Orçamento gratuito'),
-                  subtitle: Text('Não cobro pela visita ou avaliação inicial'),
+                  title: const Text('Orçamento gratuito'),
+                  subtitle: const Text(
+                      'Não cobro pela visita ou avaliação inicial'),
                   value: _orcamentoGratis,
                   activeThumbColor: Colors.black,
-                  onChanged: (valor) => setState(() => _orcamentoGratis = valor),
+                  onChanged: (valor) =>
+                      setState(() => _orcamentoGratis = valor),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _portfolioController,
+                  enabled: !_carregando,
                   keyboardType: TextInputType.url,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Portfólio ou Instagram (opcional)',
                     prefixIcon: Icon(Icons.link),
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _descricaoController,
+                  enabled: !_carregando,
                   maxLines: 4,
                   maxLength: 200,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Apresente-se em poucas palavras',
                     alignLabelWithHint: true,
                     border: OutlineInputBorder(),
@@ -401,19 +438,29 @@ class _PerguntasPrestadorViewState extends State<PerguntasPrestadorView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 ElevatedButton(
-                  onPressed: _finalizar,
+                  onPressed: _carregando ? null : _finalizar,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    minimumSize: Size(double.infinity, 50),
+                    disabledBackgroundColor: Colors.grey.shade400,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
-                  child: Text(
-                    'Concluir cadastro',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
+                  child: _carregando
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Concluir cadastro',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
                 ),
               ],
             ),

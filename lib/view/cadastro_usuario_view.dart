@@ -12,10 +12,7 @@ class CadastroUsuarioView extends StatefulWidget {
 
 class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
   final _formKey = GlobalKey<FormState>();
-
-  // Única instância: a mesma que o perfil lê
   final _controller = getIt<CadastroUsuarioController>();
-
   final _nomeController = TextEditingController();
   final _cpfController = TextEditingController();
   final _emailController = TextEditingController();
@@ -64,13 +61,24 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
                 const Icon(Icons.account_box, size: 60),
                 const SizedBox(height: 60),
 
+                // NOVO: validator no nome
                 TextFormField(
                   controller: _nomeController,
                   textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
                     labelText: 'Nome',
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe o nome';
+                    }
+                    if (value.trim().length < 3) {
+                      return 'Nome muito curto';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
 
@@ -151,6 +159,7 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     labelText: 'Senha',
+                    helperText: 'Mínimo 6 caracteres, com letras e números',
                     border: const OutlineInputBorder(),
                     suffixIcon: _senhaController.text.isEmpty
                         ? null
@@ -172,6 +181,13 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe a senha';
+                    }
+                    if (value.length < 6) {
+                      return 'Use pelo menos 6 caracteres';
+                    }
+                    if (!RegExp(r'[A-Za-z]').hasMatch(value) ||
+                        !RegExp(r'\d').hasMatch(value)) {
+                      return 'A senha deve ter letras e números';
                     }
                     return null;
                   },
@@ -225,7 +241,7 @@ class _CadastroUsuarioViewState extends State<CadastroUsuarioView> {
                     minimumSize: const Size(double.infinity, 50),
                   ),
                   child: const Text(
-                    'Criar Conta',
+                    'Continuar',
                     style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ),

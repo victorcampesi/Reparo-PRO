@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:reparo_pro/controller/sessao_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
+import 'package:reparo_pro/services/auth_service.dart';
 
-class CadastroEmpresaController extends ChangeNotifier  {
+class CadastroEmpresaController extends ChangeNotifier {
   String nome = '';
   String cnpj = '';
   String email = '';
@@ -18,25 +21,26 @@ class CadastroEmpresaController extends ChangeNotifier  {
   Set<String> areas = {};
   Set<String> publicos = {};
 
-  static final RegExp _emailRegex =
-      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+  static final RegExp _emailRegex = RegExp(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+  );
 
   static const List<int> _pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
   static const List<int> _pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
 
   void salvar({
-  required String nome,
-  required String cnpj,
-  required String email,
-  required String telefone,
-  required String senha,
-}) {
-  this.nome = nome.trim();
-  this.cnpj = cnpj.replaceAll(RegExp(r'\D'), '');
-  this.email = email.trim();
-  this.telefone = telefone.replaceAll(RegExp(r'\D'), '');
-  this.senha = senha;
-}
+    required String nome,
+    required String cnpj,
+    required String email,
+    required String telefone,
+    required String senha,
+  }) {
+    this.nome = nome.trim();
+    this.cnpj = cnpj.replaceAll(RegExp(r'\D'), '');
+    this.email = email.trim();
+    this.telefone = telefone.replaceAll(RegExp(r'\D'), '');
+    this.senha = senha;
+  }
 
   void salvarPerfil({
     required String cidade,
@@ -62,11 +66,36 @@ class CadastroEmpresaController extends ChangeNotifier  {
     this.publicos = Set.of(publicos);
   }
 
+  Future<String?> criarConta({Map<String, dynamic> extras = const {}}) async {
+    if (email.isEmpty || senha.isEmpty) {
+      return 'Dados do cadastro não encontrados. Volte e preencha novamente.';
+    }
+
+    final erro = await getIt<AuthService>().registrar(
+      email: email,
+      senha: senha,
+      dados: {
+        'tipo': TipoConta.empresa.name,
+        'nome': nome,
+        'cnpj': cnpj,
+        'telefone': telefone,
+        ...extras,
+      },
+    );
+
+    if (erro == null) {
+      SessaoController.instance.definirTipoConta(TipoConta.empresa);
+      senha = ''; 
+      notifyListeners();
+    }
+    return erro;
+  }
+
   void atualizarPerfil({
     required String nome,
     required String email,
     required String telefone,
-  required String cidade,
+    required String cidade,
     required String link,
     required String descricao,
   }) {
@@ -111,8 +140,8 @@ class CadastroEmpresaController extends ChangeNotifier  {
   bool isValidTelefone(String telefone) {
     final d = telefone.replaceAll(RegExp(r'\D'), '');
     if (d.length != 10 && d.length != 11) return false;
-    if (d.startsWith('0') || d[1] == '0') return false; // DDD inválido
-    if (d.length == 11 && d[2] != '9') return false; // celular começa com 9
+    if (d.startsWith('0') || d[1] == '0') return false; 
+    if (d.length == 11 && d[2] != '9') return false; 
     return true;
   }
 

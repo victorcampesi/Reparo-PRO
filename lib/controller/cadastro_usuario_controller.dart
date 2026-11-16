@@ -1,4 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'package:reparo_pro/controller/sessao_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
+import 'package:reparo_pro/services/auth_service.dart';
 
 class CadastroUsuarioController extends ChangeNotifier {
   String nome = '';
@@ -13,8 +16,9 @@ class CadastroUsuarioController extends ChangeNotifier {
   String portfolio = '';
   Set<String> areas = {};
 
-  static final RegExp _emailRegex =
-      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+  static final RegExp _emailRegex = RegExp(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+  );
 
   void salvar({
     required String nome,
@@ -44,40 +48,82 @@ class CadastroUsuarioController extends ChangeNotifier {
     areas = {};
   }
 
+  Future<String?> criarConta({
+    TipoConta tipo = TipoConta.consumidor,
+    Set<String> preferencias = const {},
+    Map<String, dynamic> extras = const {},
+  }) async {
+    if (email.isEmpty || senha.isEmpty) {
+      return 'Dados do cadastro não encontrados. Volte e preencha novamente.';
+    }
 
+    final dados = <String, dynamic>{
+      'tipo': tipo.name,
+      'nome': nome,
+      'cpf': cpf,
+      'telefone': telefone,
+    };
 
-void salvarPerfilProfissional({
-  required String cidade,
-  required String formacao,
-  required String experiencia,
-  required String descricao,
-  required String portfolio,
-  required Set<String> areas,
-}) {
-  this.cidade = cidade.trim();
-  this.formacao = formacao;
-  this.experiencia = experiencia;
-  this.descricao = descricao.trim();
-  this.portfolio = portfolio.trim();
-  this.areas = Set.of(areas);
-}
+    if (tipo == TipoConta.consumidor) {
+      dados['preferencias'] = preferencias.toList();
+    } else {
+      dados.addAll({
+        'cidade': cidade,
+        'formacao': formacao,
+        'experiencia': experiencia,
+        'descricao': descricao,
+        'portfolio': portfolio,
+        'areas': areas.toList(),
+        ...extras,
+      });
+    }
 
-void atualizarPerfil({
-  required String nome,
-  required String email,
-  required String telefone,
-  String? cidade,
-  String? descricao, 
-}) {
-  this.nome = nome.trim();
-  this.email = email.trim();
-  this.telefone = telefone.replaceAll(RegExp(r'\D'), '');
-  if (cidade != null) this.cidade = cidade.trim();
-  if (descricao != null) this.descricao = descricao.trim();
-  notifyListeners();
-}
+    final erro = await getIt<AuthService>().registrar(
+      email: email,
+      senha: senha,
+      dados: dados,
+    );
 
-String get telefoneFormatado {
+    if (erro == null) {
+      SessaoController.instance.definirTipoConta(tipo);
+      senha = ''; // não manter a senha em memória
+      notifyListeners();
+    }
+    return erro;
+  }
+
+  void salvarPerfilProfissional({
+    required String cidade,
+    required String formacao,
+    required String experiencia,
+    required String descricao,
+    required String portfolio,
+    required Set<String> areas,
+  }) {
+    this.cidade = cidade.trim();
+    this.formacao = formacao;
+    this.experiencia = experiencia;
+    this.descricao = descricao.trim();
+    this.portfolio = portfolio.trim();
+    this.areas = Set.of(areas);
+  }
+
+  void atualizarPerfil({
+    required String nome,
+    required String email,
+    required String telefone,
+    String? cidade,
+    String? descricao,
+  }) {
+    this.nome = nome.trim();
+    this.email = email.trim();
+    this.telefone = telefone.replaceAll(RegExp(r'\D'), '');
+    if (cidade != null) this.cidade = cidade.trim();
+    if (descricao != null) this.descricao = descricao.trim();
+    notifyListeners();
+  }
+
+  String get telefoneFormatado {
     final t = telefone;
     if (t.length == 11) {
       return '(${t.substring(0, 2)}) ${t.substring(2, 7)}-${t.substring(7)}';
@@ -91,12 +137,10 @@ String get telefoneFormatado {
   bool isValidTelefone(String telefone) {
     final d = telefone.replaceAll(RegExp(r'\D'), '');
     if (d.length != 10 && d.length != 11) return false;
-    if (d.startsWith('0') || d[1] == '0') return false; // DDD inválido
-    if (d.length == 11 && d[2] != '9') return false; // celular começa com 9
+    if (d.startsWith('0') || d[1] == '0') return false; 
+    if (d.length == 11 && d[2] != '9') return false; 
     return true;
   }
-
-
 
   String get cpfFormatado {
     if (cpf.length != 11) return cpf;
