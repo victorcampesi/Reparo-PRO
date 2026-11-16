@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:reparo_pro/controller/sessao_controller.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
@@ -26,7 +27,7 @@ class AuthService {
       case 'user-disabled':
         return 'Esta conta foi desativada.';
       default:
-         return 'Não foi possível autenticar. Tente novamente. (${e.code})';
+        return 'Não foi possível autenticar. Tente novamente. (${e.code})';
     }
   }
 
@@ -44,13 +45,40 @@ class AuthService {
     }
   }
 
+  Future<TipoConta?> tipoDoUsuario() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return null;
+    final doc = await _db.collection('usuarios').doc(uid).get();
+    final nome = doc.data()?['tipo'] as String?;
+    for (final t in TipoConta.values) {
+      if (t.name == nome) return t;
+    }
+    return null;
+  }
+
+  Future<String?> salvarPreferencias(Set<String> preferencias) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return 'Você precisa estar logado.';
+    try {
+      await _db.collection('usuarios').doc(uid).update({
+        'preferencias': preferencias.toList(),
+      });
+      return null;
+    } on FirebaseException catch (_) {
+      return 'Não foi possível salvar suas preferências.';
+    } catch (_) {
+      return 'Erro inesperado. Tente novamente.';
+    }
+  }
+
   Future<String?> registrar({
     required String email,
     required String senha,
     required Map<String, dynamic> dados,
   }) async {
+    UserCredential? cred;
     try {
-      final cred = await _auth.createUserWithEmailAndPassword(
+      cred = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: senha,
       );
@@ -63,8 +91,10 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       return _mensagem(e);
     } on FirebaseException catch (_) {
-      return 'Conta criada, mas não foi possível salvar os dados.';
+      await cred?.user?.delete();
+      return 'Não foi possível salvar seus dados. Tente novamente.';
     } catch (_) {
+      await cred?.user?.delete();
       return 'Erro inesperado. Tente novamente.';
     }
   }
@@ -80,5 +110,8 @@ class AuthService {
     }
   }
 
-  Future<void> sair() => _auth.signOut();
+  Future<void> sair() async {
+    SessaoController.instance.limpar();
+    await _auth.signOut();
+  }
 }

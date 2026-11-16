@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reparo_pro/service_locator.dart';
 import 'package:reparo_pro/services/auth_service.dart';
+import 'package:reparo_pro/controller/sessao_controller.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -27,28 +28,41 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _entrar() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
+  setState(() {
+    _carregando = true;
+    _erro = null;
+  });
+
+  final erro = await _auth.login(
+    _emailController.text,
+    _senhaController.text,
+  );
+
+  if (!mounted) return;
+
+  if (erro != null) {
     setState(() {
-      _carregando = true;
-      _erro = null;
+      _carregando = false;
+      _erro = erro;
     });
-
-    final erro = await _auth.login(
-      _emailController.text,
-      _senhaController.text,
-    );
-
-    if (!mounted) return;
-    setState(() => _carregando = false);
-
-    if (erro != null) {
-      setState(() => _erro = erro);
-      return;
-    }
-
-    Navigator.pushNamedAndRemoveUntil(context, 'home_usuario', (_) => false);
+    return;
   }
+
+  final tipo = await _auth.tipoDoUsuario();
+  if (!mounted) return;
+  setState(() => _carregando = false);
+
+  if (tipo != null) SessaoController.instance.definirTipoConta(tipo);
+
+  final rota = switch (tipo) {
+    TipoConta.autonomo => 'home_prestador',
+    TipoConta.empresa => 'home_empresa',
+    _ => 'home_usuario',
+  };
+  Navigator.pushNamedAndRemoveUntil(context, rota, (_) => false);
+}
 
   @override
   Widget build(BuildContext context) {

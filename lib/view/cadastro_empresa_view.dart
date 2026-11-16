@@ -13,7 +13,6 @@ class CadastroEmpresaView extends StatefulWidget {
 class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
   final _formKey = GlobalKey<FormState>();
 
-  // Mesma instância que a home e o perfil leem
   final _controller = getIt<CadastroEmpresaController>();
 
   final _nomeController = TextEditingController();
@@ -67,10 +66,20 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
                 TextFormField(
                   controller: _nomeController,
                   textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
                     labelText: 'Nome da Empresa',
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe o nome da empresa';
+                    }
+                    if (value.trim().length < 3) {
+                      return 'Nome muito curto';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
 
@@ -151,6 +160,7 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     labelText: 'Senha',
+                    helperText: 'Mínimo 6 caracteres, com letras e números',
                     border: const OutlineInputBorder(),
                     suffixIcon: _senhaController.text.isEmpty
                         ? null
@@ -172,6 +182,13 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe a senha';
+                    }
+                    if (value.length < 6) {
+                      return 'Use pelo menos 6 caracteres';
+                    }
+                    if (!RegExp(r'[A-Za-z]').hasMatch(value) ||
+                        !RegExp(r'\d').hasMatch(value)) {
+                      return 'A senha deve ter letras e números';
                     }
                     return null;
                   },
@@ -225,7 +242,7 @@ class _CadastroEmpresaViewState extends State<CadastroEmpresaView> {
                     minimumSize: const Size(double.infinity, 50),
                   ),
                   child: const Text(
-                    'Criar Conta',
+                    'Continuar',
                     style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ),

@@ -63,8 +63,8 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
   bool _atende24h = false;
   bool _orcamentoGratis = true;
 
-  // Só mostra os erros das seleções depois da primeira tentativa de envio
   bool _tentouEnviar = false;
+  bool _carregando = false; // NOVO
 
   @override
   void dispose() {
@@ -84,7 +84,8 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
     });
   }
 
-  void _finalizar() {
+  Future<void> _finalizar() async {
+    if (_carregando) return;
     setState(() => _tentouEnviar = true);
 
     final camposValidos = _formKey.currentState!.validate();
@@ -94,13 +95,13 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
 
     if (!camposValidos || !selecoesValidas) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Preencha todos os campos obrigatórios.')),
+        const SnackBar(content: Text('Preencha todos os campos obrigatórios.')),
       );
       return;
     }
 
-    // Guarda o perfil da empresa no controller compartilhado
-    getIt<CadastroEmpresaController>().salvarPerfil(
+    final controller = getIt<CadastroEmpresaController>();
+    controller.salvarPerfil(
       cidade: _cidadeController.text,
       funcionarios: _faixaSelecionada ?? '',
       tempoResposta: _tempoResposta ?? '',
@@ -113,12 +114,44 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
       publicos: _publicosSelecionados,
     );
 
-    Navigator.pushReplacementNamed(context, 'home_empresa');
+    setState(() => _carregando = true);
+
+    final erro = await controller.criarConta(
+      extras: {
+        'cidade': _cidadeController.text.trim(),
+        'funcionarios': _faixaSelecionada ?? '',
+        'tempoResposta': _tempoResposta ?? '',
+        'link': _linkController.text.trim(),
+        'descricao': _descricaoController.text.trim(),
+        'raioKm': _raioKm.round(),
+        'atende24h': _atende24h,
+        'orcamentoGratis': _orcamentoGratis,
+        'areas': _areasSelecionadas.toList(),
+        'publicos': _publicosSelecionados.toList(),
+      },
+    );
+
+    if (!mounted) return;
+    setState(() => _carregando = false);
+
+    if (erro != null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(erro)));
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('Conta criada com sucesso!')),
+      );
+    Navigator.pushNamedAndRemoveUntil(context, 'home_empresa', (_) => false);
   }
 
   Widget _erro(String mensagem) {
     return Padding(
-      padding: EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.only(top: 6),
       child: Text(
         mensagem,
         style: TextStyle(color: Colors.red.shade700, fontSize: 12),
@@ -129,7 +162,7 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
   Widget _titulo(String texto) {
     return Text(
       texto,
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
     );
   }
 
@@ -139,38 +172,38 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
       appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(child: Icon(Icons.storefront_outlined, size: 60)),
-                SizedBox(height: 20),
+                const Center(child: Icon(Icons.storefront_outlined, size: 60)),
+                const SizedBox(height: 20),
 
-                Center(
+                const Center(
                   child: Text(
                     'Conte-nos sobre sua empresa',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-                Center(
+                const Center(
                   child: Text(
                     'Essas informações ajudam os clientes a encontrar você.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
 
-                // --- Cidade-base ---
                 TextFormField(
                   controller: _cidadeController,
+                  enabled: !_carregando,
                   textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Cidade-base',
                     prefixIcon: Icon(Icons.location_city_outlined),
                     border: OutlineInputBorder(),
@@ -182,11 +215,10 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-                // --- Quantidade de funcionários ---
                 _titulo('Quantos funcionários a empresa possui?'),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -210,11 +242,10 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
                 ),
                 if (_tentouEnviar && _faixaSelecionada == null)
                   _erro('Selecione uma faixa de funcionários'),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-                // --- Áreas de atuação ---
                 _titulo('Em quais áreas a empresa atua?'),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -236,11 +267,10 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
                 ),
                 if (_tentouEnviar && _areasSelecionadas.isEmpty)
                   _erro('Selecione pelo menos uma área'),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-                // --- Público atendido ---
                 _titulo('Que tipo de cliente vocês atendem?'),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -263,9 +293,8 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
                 ),
                 if (_tentouEnviar && _publicosSelecionados.isEmpty)
                   _erro('Selecione pelo menos um tipo de cliente'),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-                // --- Raio de atendimento ---
                 _titulo('Raio de atendimento: ${_raioKm.round()} km'),
                 Slider(
                   value: _raioKm,
@@ -276,12 +305,11 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
                   label: '${_raioKm.round()} km',
                   onChanged: (valor) => setState(() => _raioKm = valor),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
 
-                // --- Tempo de resposta ---
                 DropdownButtonFormField<String>(
                   initialValue: _tempoResposta,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Tempo médio de resposta',
                     prefixIcon: Icon(Icons.timer_outlined),
                     border: OutlineInputBorder(),
@@ -293,43 +321,47 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
                   validator: (valor) =>
                       valor == null ? 'Selecione o tempo de resposta' : null,
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
 
-                // --- Switches ---
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Atendimento 24 horas'),
-                  subtitle: Text('Inclui emergências, noites e fins de semana'),
+                  title: const Text('Atendimento 24 horas'),
+                  subtitle:
+                      const Text('Inclui emergências, noites e fins de semana'),
                   value: _atende24h,
                   activeThumbColor: Colors.black,
                   onChanged: (valor) => setState(() => _atende24h = valor),
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Orçamento gratuito'),
-                  subtitle: Text('Não cobra pela visita ou avaliação inicial'),
+                  title: const Text('Orçamento gratuito'),
+                  subtitle:
+                      const Text('Não cobra pela visita ou avaliação inicial'),
                   value: _orcamentoGratis,
                   activeThumbColor: Colors.black,
-                  onChanged: (valor) => setState(() => _orcamentoGratis = valor),
+                  onChanged: (valor) =>
+                      setState(() => _orcamentoGratis = valor),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _linkController,
+                  enabled: !_carregando,
                   keyboardType: TextInputType.url,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Site ou Instagram (opcional)',
                     prefixIcon: Icon(Icons.link),
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _descricaoController,
+                  enabled: !_carregando,
                   maxLines: 4,
                   maxLength: 200,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Descreva sua empresa em poucas palavras',
                     alignLabelWithHint: true,
                     border: OutlineInputBorder(),
@@ -341,19 +373,29 @@ class _PerguntasEmpresaViewState extends State<PerguntasEmpresaView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 ElevatedButton(
-                  onPressed: _finalizar,
+                  onPressed: _carregando ? null : _finalizar,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    minimumSize: Size(double.infinity, 50),
+                    disabledBackgroundColor: Colors.grey.shade400,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
-                  child: Text(
-                    'Concluir cadastro',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
+                  child: _carregando
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Concluir cadastro',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
                 ),
               ],
             ),

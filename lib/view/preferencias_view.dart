@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:reparo_pro/controller/preferencias_controller.dart';
+import 'package:reparo_pro/controller/cadastro_usuario_controller.dart';
+import 'package:reparo_pro/service_locator.dart';
+import 'package:reparo_pro/services/auth_service.dart';
 
 class AreaServico {
   final String nome;
@@ -36,6 +39,12 @@ class _PreferenciasViewState extends State<PreferenciasView> {
   ];
 
   final Set<String> _selecionadas = {};
+  final _cadastro = getIt<CadastroUsuarioController>();
+  final _auth = getIt<AuthService>();
+  bool _carregando = false;
+
+  // true = já existe conta logada (edição); false = fluxo de cadastro
+  bool get _jaLogado => _auth.usuarioAtual != null;
 
   void _alternar(String nome) {
     setState(() {
@@ -47,14 +56,59 @@ class _PreferenciasViewState extends State<PreferenciasView> {
     });
   }
 
-  void _continuar() {
-    PreferenciasController.instance.definir(_selecionadas);
-    Navigator.pushReplacementNamed(context, 'home_usuario');
+  Future<void> _finalizar({required bool comPreferencias}) async {
+    if (_carregando) return;
+    setState(() => _carregando = true);
+
+    final jaLogado = _jaLogado;
+    final prefs = comPreferencias ? Set<String>.of(_selecionadas) : <String>{};
+
+    final erro = jaLogado
+        ? await _auth.salvarPreferencias(prefs)
+        : await _cadastro.criarConta(preferencias: prefs);
+
+    if (!mounted) return;
+    setState(() => _carregando = false);
+
+    if (erro != null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(erro)));
+      return;
+    }
+
+    if (comPreferencias) {
+      PreferenciasController.instance.definir(prefs);
+    } else {
+      PreferenciasController.instance.limpar();
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            jaLogado ? 'Preferências salvas!' : 'Conta criada com sucesso!',
+          ),
+        ),
+      );
+
+    if (jaLogado) {
+      Navigator.pop(context);
+    } else {
+      Navigator.pushNamedAndRemoveUntil(context, 'home_usuario', (_) => false);
+    }
   }
 
+  void _continuar() => _finalizar(comPreferencias: true);
+
   void _pular() {
-    PreferenciasController.instance.limpar();
-    Navigator.pushReplacementNamed(context, 'home_usuario');
+    if (_jaLogado) {
+      // quem já tem conta só volta, sem apagar as preferências
+      Navigator.pop(context);
+      return;
+    }
+    _finalizar(comPreferencias: false);
   }
 
   @override
@@ -64,31 +118,34 @@ class _PreferenciasViewState extends State<PreferenciasView> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Column(
             children: [
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(onPressed: _pular, child: Text('Pular')),
+                child: TextButton(
+                  onPressed: _carregando ? null : _pular,
+                  child: Text(_jaLogado ? 'Cancelar' : 'Pular'),
+                ),
               ),
 
-              Text(
+              const Text(
                 'Escolha suas áreas de interesse',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-              Text(
+              const Text(
                 'Vamos personalizar seu feed com os serviços que mais interessam a você.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               Expanded(
                 child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
@@ -106,28 +163,37 @@ class _PreferenciasViewState extends State<PreferenciasView> {
                 ),
               ),
 
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
 
               Text(
                 _selecionadas.isEmpty
                     ? 'Selecione pelo menos $_minimoSelecionado área'
                     : '${_selecionadas.length} selecionada(s)',
-                style: TextStyle(color: Colors.grey),
+                style: const TextStyle(color: Colors.grey),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
 
               ElevatedButton(
-                onPressed: podeContinuar ? _continuar : null,
+                onPressed: (podeContinuar && !_carregando) ? _continuar : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   disabledBackgroundColor: Colors.grey.shade300,
-                  padding: EdgeInsets.symmetric(vertical: 15),
-                  minimumSize: Size(double.infinity, 50),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  minimumSize: const Size(double.infinity, 50),
                 ),
-                child: Text(
-                  'Continuar',
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
+                child: _carregando
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Continuar',
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
               ),
             ],
           ),
@@ -157,7 +223,7 @@ class _CardArea extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           color: corFundo,
           borderRadius: BorderRadius.circular(16),
@@ -173,7 +239,7 @@ class _CardArea extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(area.icone, size: 32, color: corConteudo),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     area.nome,
                     textAlign: TextAlign.center,
@@ -187,7 +253,7 @@ class _CardArea extends StatelessWidget {
               ),
             ),
             if (selecionada)
-              Positioned(
+              const Positioned(
                 top: 8,
                 right: 8,
                 child: Icon(Icons.check_circle, size: 20, color: Colors.white),

@@ -24,7 +24,10 @@ import 'package:reparo_pro/view/tipo_usuario_view.dart';
 import 'view/cadastro_usuario_view.dart';
 import 'view/recuperar_senha_view.dart';
 
-void main() async {
+
+
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
