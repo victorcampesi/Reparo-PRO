@@ -21,6 +21,8 @@ import 'package:reparo_pro/view/preferencias_view.dart';
 import 'package:reparo_pro/view/saber_mais_view.dart';
 import 'package:reparo_pro/view/tipo_prestador_view.dart';
 import 'package:reparo_pro/view/tipo_usuario_view.dart';
+import 'package:reparo_pro/view/nova_solicitacao_view.dart';
+import 'package:reparo_pro/view/minhas_solicitacoes_view.dart';
 import 'view/cadastro_usuario_view.dart';
 import 'view/recuperar_senha_view.dart';
 
@@ -71,6 +73,8 @@ class MainApp extends StatelessWidget {
         'editar_perfil': (context) => const EditarPerfilView(),
         'editar_perfil_prestador': (context) => const EditarPerfilView(profissional: true),
         'editar_perfil_empresa': (context) => const EditarPerfilEmpresaView(),
+        'nova_solicitacao': (context) => const NovaSolicitacaoView(),
+        'minhas_solicitacoes': (context) => const MinhasSolicitacoesView(),
       },
 
       onUnknownRoute: (settings) {

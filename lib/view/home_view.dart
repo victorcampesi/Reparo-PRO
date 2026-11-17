@@ -214,19 +214,28 @@ class _HomeViewState extends State<HomeView> {
   }
 
   void _buscarServico() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => const BuscarServicoView()),
-  );
-}
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const BuscarServicoView()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Reparo PRO', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Reparo PRO',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.assignment_outlined),
+            tooltip: 'Minhas solicitações',
+            onPressed: () =>
+                Navigator.pushNamed(context, 'minhas_solicitacoes'),
+          ),
           IconButton(
             icon: Icon(Icons.tune),
             tooltip: 'Áreas de interesse',
@@ -240,7 +249,6 @@ class _HomeViewState extends State<HomeView> {
         ],
       ),
       body: SafeArea(
-        
         child: Padding(
           padding: EdgeInsets.fromLTRB(20, 8, 20, 0),
           child: Column(
@@ -261,21 +269,21 @@ class _HomeViewState extends State<HomeView> {
 
               SizedBox(height: 12),
 
-               SizedBox(
-               width: double.infinity,
-               child: ElevatedButton.icon(
-                 onPressed: _buscarServico,
-                 icon: Icon(Icons.bolt, color: Colors.white),
-                 label: Text(
-                   'Buscar serviço agora',
-                   style: TextStyle(color: Colors.white, fontSize: 16),
-                 ),
-                 style: ElevatedButton.styleFrom(
-                   backgroundColor: Colors.black,
-                   padding: EdgeInsets.symmetric(vertical: 14),
-                 ),
-               ),
-             ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _buscarServico,
+                  icon: Icon(Icons.bolt, color: Colors.white),
+                  label: Text(
+                    'Buscar serviço agora',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
 
               // Reconstrói automaticamente quando as preferências mudam
               Expanded(
@@ -413,8 +421,7 @@ class _PostCardState extends State<_PostCard> {
   bool _curtido = false;
 
   String get _iniciais {
-    final partes =
-        widget.postagem.autor.split(' ').where((p) => p.isNotEmpty);
+    final partes = widget.postagem.autor.split(' ').where((p) => p.isNotEmpty);
     return partes.take(2).map((p) => p[0]).join().toUpperCase();
   }
 
@@ -506,11 +513,7 @@ class _PostCardState extends State<_PostCard> {
                       texto: 'Salvar',
                       onTap: () {},
                     ),
-                    _Acao(
-                      icone: Icons.share_outlined,
-                      texto: '',
-                      onTap: () {},
-                    ),
+                    _Acao(icone: Icons.share_outlined, texto: '', onTap: () {}),
                   ],
                 ),
               ],
