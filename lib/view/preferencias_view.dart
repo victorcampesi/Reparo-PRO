@@ -43,8 +43,8 @@ class _PreferenciasViewState extends State<PreferenciasView> {
   final _auth = getIt<AuthService>();
   bool _carregando = false;
 
-  // true = já existe conta logada (edição); false = fluxo de cadastro
-  bool get _jaLogado => _auth.usuarioAtual != null;
+  // ALTERADO: true somente quando a tela é aberta pela home (arguments: true)
+  bool get _modoEdicao => ModalRoute.of(context)?.settings.arguments == true;
 
   void _alternar(String nome) {
     setState(() {
@@ -60,10 +60,10 @@ class _PreferenciasViewState extends State<PreferenciasView> {
     if (_carregando) return;
     setState(() => _carregando = true);
 
-    final jaLogado = _jaLogado;
+    final modoEdicao = _modoEdicao;
     final prefs = comPreferencias ? Set<String>.of(_selecionadas) : <String>{};
 
-    final erro = jaLogado
+    final erro = modoEdicao
         ? await _auth.salvarPreferencias(prefs)
         : await _cadastro.criarConta(preferencias: prefs);
 
@@ -88,12 +88,12 @@ class _PreferenciasViewState extends State<PreferenciasView> {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            jaLogado ? 'Preferências salvas!' : 'Conta criada com sucesso!',
+            modoEdicao ? 'Preferências salvas!' : 'Conta criada com sucesso!',
           ),
         ),
       );
 
-    if (jaLogado) {
+    if (modoEdicao) {
       Navigator.pop(context);
     } else {
       Navigator.pushNamedAndRemoveUntil(context, 'home_usuario', (_) => false);
@@ -103,8 +103,8 @@ class _PreferenciasViewState extends State<PreferenciasView> {
   void _continuar() => _finalizar(comPreferencias: true);
 
   void _pular() {
-    if (_jaLogado) {
-      // quem já tem conta só volta, sem apagar as preferências
+    if (_modoEdicao) {
+      // quem está editando só volta, sem apagar as preferências
       Navigator.pop(context);
       return;
     }
@@ -125,7 +125,7 @@ class _PreferenciasViewState extends State<PreferenciasView> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: _carregando ? null : _pular,
-                  child: Text(_jaLogado ? 'Cancelar' : 'Pular'),
+                  child: Text(_modoEdicao ? 'Cancelar' : 'Pular'),
                 ),
               ),
 
